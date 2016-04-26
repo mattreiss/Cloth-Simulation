@@ -20,12 +20,12 @@
 #define FALSE 0
 
 #define GRAVITY 0.0981
-#define DAMPING 0.02
+#define DAMPING 0.05
 #define TIME_STEPSIZE 0.25
 
 #define CLOTH_WIDTH 20
 #define CLOTH_HEIGHT 20
-#define PARTICLE_WIDTH 40 // must be >= 2 particles wide
+#define PARTICLE_WIDTH 20 // must be >= 2 particles wide
 #define PARTICLE_HEIGHT 20 // must be >= 2 particles heigh
 
 #define ARRAY_SIZE PARTICLE_WIDTH*PARTICLE_HEIGHT
@@ -66,9 +66,12 @@ typedef struct
 
 int ball_time = 0;
 int ball_direction = 1;
+int ballAnimation = 1;
+float ball_speed = 80.0;
+float edge_correction = 0.3;
 Particle particles[ARRAY_SIZE];
 Spring springs[SPRING_COUNT];
-Vec3 windForce = { -0.0001, 0.0001, 0.0001 };
+Vec3 windForce = { 0.005, 0.001, 0.0001 };
 Vec3 ball_pos = { 0,0,0 };
 
 // *************************************
@@ -137,9 +140,11 @@ void initializeNormals()
 		{
 			// triangle topleft, bottomleft, and topright
 			Vec3 n1 = calcNormal(i, downIndex, rightIndex);
+			n1 = normalize(n1);
 
 			// triangle bottomright, bottomleft, topright
 			Vec3 n2 = calcNormal(downRightIndex, downIndex, rightIndex);
+			n2 = normalize(n2);
 
 			particles[i].normal.x += n1.x;
 			particles[i].normal.y += n1.y;
@@ -191,7 +196,7 @@ void initializeParticles()
 		particles[i].previousPosition = pos;
 		particles[i].acceleration = z;
 		particles[i].normal = z;
-		particles[i].mass = 1.0;
+		particles[i].mass = 0.5;
 		particles[i].isMovable = 1;
 
 		// immobilize corners
@@ -209,6 +214,7 @@ void updateParticles()
 	int i;
 	for (i = 0; i < ARRAY_SIZE; i++)
 	{
+		int row = i / PARTICLE_WIDTH; // sets row position
 		if (particles[i].isMovable)
 		{
 			Vec3 temp = particles[i].position;
@@ -278,25 +284,6 @@ int generateRandom(int min, int max)
 
 void addWindForce()
 {
-	int min = 10;
-	int max = 100000;
-	float offset = 0.000000015;
-	int sign = 1;
-	int rand1 = generateRandom(min,max);
-	int rand2 = generateRandom(min,max);
-	if (rand1 > rand2 && rand1 % rand2 <= 17)
-	{
-		if (generateRandom(min,max) % 2 == 0) sign = -1;
-		float windX = sign * offset * generateRandom(min,max);
-		if (generateRandom(min,max) % 2 == 0) sign = -1;
-		float windY = sign * offset * generateRandom(min,max);
-		if (generateRandom(min,max) % 2 == 0) sign = -1;
-		float windZ = sign * offset * generateRandom(min,max);
-
-		windForce.x += windX;
-		windForce.y += windY;
-		windForce.z += windZ;
-	}
 	int i;
 	for (i = 0; i < ARRAY_SIZE; i++)
 	{
@@ -339,7 +326,7 @@ void initializeSprings()
 	// default rest lengths of springs
 	float restLengthX = particles[1].position.x - particles[0].position.x;
 	float restLengthY = particles[PARTICLE_WIDTH].position.y - particles[0].position.y;
-	float restLengthDiagonal = sqrt(restLengthX * restLengthX + restLengthY * restLengthY);
+	float restLengthDiagonal = sqrt((restLengthX * restLengthX) + (restLengthY * restLengthY));
 
 	//printf("x = %f, y = %f\n",restLengthX,restLengthY);
 
@@ -473,7 +460,9 @@ void drawCloth()
 
 		glBegin(GL_TRIANGLES);
 
+
 	int i;
+
 	for (i = 0; i < ARRAY_SIZE; i++)
 	{
 		int y = i / PARTICLE_WIDTH + 1;
@@ -482,18 +471,26 @@ void drawCloth()
 		int rightIndex = i + 1;
 		int downIndex = i + PARTICLE_WIDTH;
 		int downRightIndex = i + PARTICLE_WIDTH + 1;
+		
+		//set colors
+		int pat = 0;
+		if (y % 2 == 0) pat = 1;
+		if (i % 2 == pat)
+		{
+			glColor3f(4.5,4.5,4.5);
+		} else
+		{
+			glColor3f(4.0,1.5,1.5);
+		}
+		//border color
+		if (y == 1 || (y+1)*PARTICLE_WIDTH >= ARRAY_SIZE || i == (y-1)*PARTICLE_WIDTH || i+1 == (y)*PARTICLE_WIDTH - 1)
+		{
+			glColor3f(0.0,0.0,0.0);
+		}
 
+		//draw valid triangles
 		if (rightIndex < PARTICLE_WIDTH*y && downIndex < ARRAY_SIZE)
 		{
-			int pat = 0;
-			if (y % 2 == 0) pat = 1;
-			if (i % 2 == pat)
-			{
-				glColor3f(1.0f,1.0f,1.0f);
-			} else
-			{
-				glColor3f(0.9,0.5,0.5);
-			}
 			// triangle topleft, bottomleft, and topright
 			drawTriangle(i, downIndex, rightIndex);
 
@@ -510,6 +507,7 @@ void drawCloth()
 void detectCollision()
 {
 	int i;
+	float edge = BALL_RADIUS + edge_correction;
 	for (i = 0; i < ARRAY_SIZE; i++)
 	{
 		Vec3 v = {
@@ -519,11 +517,11 @@ void detectCollision()
 		};
 		Vec3 norm = normalize(v);
 		float mag = magnitude(v);
-		if (mag < BALL_RADIUS)
+		if (mag <= edge)
 		{
-			particles[i].position.x += norm.x * (BALL_RADIUS - mag);
-			particles[i].position.y += norm.y * (BALL_RADIUS - mag);
-			particles[i].position.z += norm.z * (BALL_RADIUS - mag);
+			particles[i].position.x += norm.x * (edge - mag);
+			particles[i].position.y += norm.y * (edge - mag);
+			particles[i].position.z += norm.z * (edge - mag);
 		}
 	}
 }
@@ -531,11 +529,20 @@ void detectCollision()
 
 void resetCloth()
 {
+
 	// initialize cloth grid
 	initializeParticles();
 
 	//initialize springs on cloth grid
 	initializeSprings();
+
+
+	//initialize variables
+	ball_time = 250;
+	ball_direction = 1;
+	ballAnimation = 1;
+	ball_speed = 80.0;
+	edge_correction = 0.3;
 }
 
 
@@ -544,7 +551,7 @@ void resetCloth()
 
 void init (void)
 {
-	resetCloth();
+	//resetCloth();
 
 	glShadeModel (GL_SMOOTH);
 	glClearColor (0.2f, 0.2f, 0.4f, 0.5f);				
@@ -566,25 +573,27 @@ void init (void)
 	glLightfv (GL_LIGHT1,GL_DIFFUSE, (GLfloat *) &lightDiffuse1);
 	glLightModeli (GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
-
 }
 
 
 void display (void)
 {
 
-			detectCollision();
+			
 			updateParticles();
 			constrainSprings();
 			addGravityForce();
+		if (ball_time > 250) // let cloth have time to drop
+		{
 			addWindForce();
 			detectCollision();
+		}
 
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
 	glDisable (GL_LIGHTING);
 	glBegin (GL_POLYGON);
-	glColor3f (0.8f, 0.8f, 1.0f);
+	glColor3f (0.8f, 0.8f, 0.8f);
 	glVertex3f (-200.0f, -100.0f, -100.0f);
 	glVertex3f (200.0f, -100.0f, -100.0f);
 	glColor3f (0.4f, 0.4f, 0.8f);	
@@ -598,21 +607,23 @@ void display (void)
 
   	glPushMatrix ();
 
-  		ball_time ++;
-  		float move = cos(ball_time/50.0)*25 - 10;
+  		if (ballAnimation) ball_time ++;
+  		float move = cos(ball_time/ball_speed)*20-3;
 
-  		ball_pos.x = -BALL_RADIUS/2;
+  		ball_pos.x = -BALL_RADIUS/2 + 1;
   		ball_pos.y = 5;
   		ball_pos.z = BALL_POSITION_Z + move;
 
   	glTranslatef ( ball_pos.x, ball_pos.y, ball_pos.z );
   	glColor3f (1.0f, 1.0f, 0.0f);
   	glutSolidSphere (BALL_RADIUS - 0.1, 50, 50); // draw the ball, but with a slightly lower radius, otherwise we could get ugly visual artifacts of rope penetrating the ball slightly
-  	
 
   	glPopMatrix ();
   	glutSwapBuffers();
   	glutPostRedisplay();
+
+
+
 }
 
 
@@ -649,6 +660,34 @@ void keyboard (unsigned char key, int x, int y)
 		break;  
 		case 32:
 		break;
+		case '=':
+			windForce.z += 0.001;
+		break;
+		case '-':
+			windForce.z -= 0.001;
+		break;
+		case ']':
+			windForce.x += 0.001;
+		break;
+		case '[':
+			windForce.x -= 0.001;
+		break;
+		case '>':
+		case '.':
+			if (ball_speed > 20.0) ball_speed -= 10.0;
+		break;
+		case '<':
+		case ',':
+			if (ball_speed < 120) ball_speed +=  10.0;
+		break;
+		case '1':
+			if (edge_correction > 0.1) edge_correction -=  0.05;
+			//printf("edge correction = %f\n", edge_correction);
+			break;
+		case '2':
+			if (edge_correction < 1.0) edge_correction +=  0.05;
+			//printf("edge correction = %f\n", edge_correction);
+		break;
 		default: 
 		break;
 	}
@@ -671,6 +710,10 @@ void arrow_keys (int a_keys, int x, int y)
 		case GLUT_KEY_LEFT: 
 		resetCloth();
 		break;
+		case GLUT_KEY_RIGHT: 
+		if (ballAnimation) ballAnimation = 0;
+		else ballAnimation = 1;
+		break;
 		default:
 		break;
 	}
@@ -682,6 +725,15 @@ void arrow_keys (int a_keys, int x, int y)
 
 int main (int argc, char *argv[]) 
 {
+	printf("\n\n**********Cloth Simulation**********\n");
+	printf("'+' or '-'      change wind in z direction\n");
+	printf("'[' or ']'      change wind in x direction\n");
+	printf("'1' or '2'      change edge correction for collision\n");
+	printf("'<' or '>'      change ball speed\n");
+	printf("'left'          reset cloth\n");
+	printf("'right'         toggle ball motion\n");
+	printf("'up'            full screen\n");
+	printf("'esc'           quit\n");
 
 	srand(time(NULL));
 
@@ -694,6 +746,8 @@ int main (int argc, char *argv[])
 	glutReshapeFunc (reshape);
 	glutKeyboardFunc (keyboard);
 	glutSpecialFunc (arrow_keys);
+	resetCloth();
 	glutMainLoop ();
+
 }
 
