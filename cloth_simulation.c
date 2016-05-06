@@ -21,16 +21,17 @@
 
 #define GRAVITY 0.0981
 #define DAMPING 0.05
-#define TIME_STEPSIZE 0.25
+#define TIME_STEPSIZE 0.35
 
-#define CLOTH_WIDTH 20
+#define CLOTH_WIDTH 25
 #define CLOTH_HEIGHT 20
-#define PARTICLE_WIDTH 20 // must be >= 2 particles wide
-#define PARTICLE_HEIGHT 20 // must be >= 2 particles heigh
+#define PARTICLE_WIDTH 60 // must be >= 2 particles wide
+#define PARTICLE_HEIGHT 60 // must be >= 2 particles heigh
+#define MASS 0.9
 
 #define ARRAY_SIZE PARTICLE_WIDTH*PARTICLE_HEIGHT
 #define SPRING_COUNT 6 + 5*((PARTICLE_WIDTH - 2) + (PARTICLE_HEIGHT - 2)) + 4*(PARTICLE_WIDTH - 2) * (PARTICLE_HEIGHT - 2)
-#define CONSTRAINT_ITERATIONS 15
+#define CONSTRAINT_ITERATIONS 20
 
 
 // ************************************
@@ -71,7 +72,7 @@ float ball_speed = 80.0;
 float edge_correction = 0.3;
 Particle particles[ARRAY_SIZE];
 Spring springs[SPRING_COUNT];
-Vec3 windForce = { 0.005, 0.001, 0.0001 };
+Vec3 windForce = { 0.05, 0.01, 0.03 };
 Vec3 ball_pos = { 0,0,0 };
 
 // *************************************
@@ -184,8 +185,8 @@ void initializeParticles()
 		float ch = CLOTH_HEIGHT;
 
 		int row = i / pw; // sets row position
-		float x = ((cw/(pw - 1)) * (i - (row*pw))) - xPosOffset;
-		float y = ch/(ph-1) * row;
+		float x = ((cw/pw) * (i - (row*pw))) - xPosOffset;
+		float y = ch/ph * row;
 
 		Vec3 pos = { x, y, 0 };
 		// set zero vector
@@ -196,11 +197,11 @@ void initializeParticles()
 		particles[i].previousPosition = pos;
 		particles[i].acceleration = z;
 		particles[i].normal = z;
-		particles[i].mass = 0.5;
+		particles[i].mass = MASS;
 		particles[i].isMovable = 1;
 
 		// immobilize corners
-		if (i + PARTICLE_WIDTH == ARRAY_SIZE || i + 1 == ARRAY_SIZE) 
+		if ((row+1)*pw == ARRAY_SIZE && (i + PARTICLE_WIDTH == ARRAY_SIZE || i + 1 == ARRAY_SIZE)) 
 		{
 			particles[i].isMovable = 0;
 			particles[i-PARTICLE_WIDTH].isMovable = 0;
@@ -328,7 +329,7 @@ void initializeSprings()
 	float restLengthY = particles[PARTICLE_WIDTH].position.y - particles[0].position.y;
 	float restLengthDiagonal = sqrt((restLengthX * restLengthX) + (restLengthY * restLengthY));
 
-	//printf("x = %f, y = %f\n",restLengthX,restLengthY);
+	printf("x = %f, y = %f\n",restLengthX,restLengthY);
 
 	int j = 0;
 	for (i = 0; i < ARRAY_SIZE; i++)
@@ -385,7 +386,7 @@ void constrainSprings()
 {
 	int i;
 	int j;
-	//for(j=0; j<CONSTRAINT_ITERATIONS; j++) // iterate over all constraints several times
+	for(j=0; j<CONSTRAINT_ITERATIONS; j++) // iterate over all constraints several times
 	{
 		for (i = 0; i < SPRING_COUNT; i++)
 		{
@@ -601,7 +602,7 @@ void display (void)
 	glVertex3f (-200.0f, 100.0f, -100.0f);
 	glEnd ();
 	glEnable (GL_LIGHTING);
-  	glTranslatef (1, -7, -25.0f); // move camera out and center on the cloth
+  	glTranslatef (1, -7, -(CLOTH_HEIGHT + 5)); // move camera out and center on the cloth
 
 			drawCloth();
 
