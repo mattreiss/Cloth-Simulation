@@ -5,7 +5,8 @@
 
 #if __APPLE__
 	#include <OpenGL/gl.h>
- 	#include <OpenGL/glu.h>
+
+	#include <OpenGL/glu.h>
 	#include <GLUT/glut.h>
 #elif __linux__
 	#include <GL/gl.h>
@@ -662,16 +663,8 @@ void keyboard (unsigned char key, int x, int y)
 		case 32:
 		break;
 		case '=':
-			windForce.z += 0.001;
 		break;
 		case '-':
-			windForce.z -= 0.001;
-		break;
-		case ']':
-			windForce.x += 0.001;
-		break;
-		case '[':
-			windForce.x -= 0.001;
 		break;
 		case '>':
 		case '.':
@@ -689,7 +682,20 @@ void keyboard (unsigned char key, int x, int y)
 			if (edge_correction < 1.0) edge_correction +=  0.05;
 			//printf("edge correction = %f\n", edge_correction);
 		break;
-		default: 
+        case 'r':
+            resetCloth();
+        break;
+        case 's':
+            if (ballAnimation) ballAnimation = 0;
+            else ballAnimation = 1;
+        break;
+        case 'f':
+            glutFullScreen();
+        break;
+        case 'm':
+            glutReshapeWindow (1280, 720 );
+        break;
+		default:
 		break;
 	}
 }
@@ -703,17 +709,16 @@ void arrow_keys (int a_keys, int x, int y)
 	switch(a_keys) 
 	{
 		case GLUT_KEY_UP:
-		glutFullScreen();
+            windForce.z += 0.001;
 		break;
-		case GLUT_KEY_DOWN: 
-		glutReshapeWindow (1280, 720 );
+		case GLUT_KEY_DOWN:
+            windForce.z -= 0.001;
 		break;
-		case GLUT_KEY_LEFT: 
-		resetCloth();
+        case GLUT_KEY_LEFT:
+            windForce.x -= 0.001;
 		break;
-		case GLUT_KEY_RIGHT: 
-		if (ballAnimation) ballAnimation = 0;
-		else ballAnimation = 1;
+        case GLUT_KEY_RIGHT:
+            windForce.x += 0.001;
 		break;
 		default:
 		break;
@@ -727,13 +732,14 @@ void arrow_keys (int a_keys, int x, int y)
 int main (int argc, char *argv[]) 
 {
 	printf("\n\n**********Cloth Simulation**********\n");
-	printf("'+' or '-'      change wind in z direction\n");
-	printf("'[' or ']'      change wind in x direction\n");
+	printf("'up' or 'down'      change wind in z direction\n");
+	printf("'left' or 'right'      change wind in x direction\n");
 	printf("'1' or '2'      change edge correction for collision\n");
 	printf("'<' or '>'      change ball speed\n");
-	printf("'left'          reset cloth\n");
-	printf("'right'         toggle ball motion\n");
-	printf("'up'            full screen\n");
+	printf("'r'          reset cloth\n");
+    printf("'s'         toggle ball motion\n");
+    printf("'f'            full screen\n");
+    printf("'m'            normal screen\n");
 	printf("'esc'           quit\n");
 
 	srand(time(NULL));
