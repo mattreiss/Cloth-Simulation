@@ -111,7 +111,7 @@ float dot(Vec3 i, Vec3 j)
 
 Vec3 calcNormal(int i, int j, int k)
 {
-	// calc normal force of triangle formed
+	// calculate normal force of triangle formed
 	Vec3 v1 = {
 		particles[j].position.x - particles[i].position.x,
 		particles[j].position.y - particles[i].position.y,
