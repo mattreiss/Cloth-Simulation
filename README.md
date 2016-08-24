@@ -1,5 +1,5 @@
 # Cloth Simulation
-An openGL and C implementation of a cloth simulation.
+An implementation of a cloth simulation using OpenGL and C.
 
 # To Run
 Mac
