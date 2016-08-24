@@ -28,7 +28,7 @@
 #define CLOTH_HEIGHT 20
 #define PARTICLE_WIDTH 50 // must be >= 2 particles wide
 #define PARTICLE_HEIGHT 50 // must be >= 2 particles heigh
-#define MASS 0.9
+#define MASS 1.0
 
 #define ARRAY_SIZE PARTICLE_WIDTH*PARTICLE_HEIGHT
 #define SPRING_COUNT 6 + 5*((PARTICLE_WIDTH - 2) + (PARTICLE_HEIGHT - 2)) + 4*(PARTICLE_WIDTH - 2) * (PARTICLE_HEIGHT - 2)
