@@ -26,8 +26,8 @@
 
 #define CLOTH_WIDTH 25
 #define CLOTH_HEIGHT 20
-#define PARTICLE_WIDTH 20 // must be >= 2 particles wide
-#define PARTICLE_HEIGHT 20 // must be >= 2 particles heigh
+#define PARTICLE_WIDTH 40 // must be >= 2 particles wide
+#define PARTICLE_HEIGHT 40 // must be >= 2 particles heigh
 #define MASS 1.5
 
 #define ARRAY_SIZE PARTICLE_WIDTH*PARTICLE_HEIGHT
