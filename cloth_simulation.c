@@ -26,9 +26,15 @@
 
 #define CLOTH_WIDTH 25
 #define CLOTH_HEIGHT 20
+<<<<<<< HEAD
 #define PARTICLE_WIDTH 50 // must be >= 2 particles wide
 #define PARTICLE_HEIGHT 50 // must be >= 2 particles heigh
 #define MASS 1.0
+=======
+#define PARTICLE_WIDTH 20 // must be >= 2 particles wide
+#define PARTICLE_HEIGHT 20 // must be >= 2 particles heigh
+#define MASS 0.9
+>>>>>>> develop
 
 #define ARRAY_SIZE PARTICLE_WIDTH*PARTICLE_HEIGHT
 #define SPRING_COUNT 6 + 5*((PARTICLE_WIDTH - 2) + (PARTICLE_HEIGHT - 2)) + 4*(PARTICLE_WIDTH - 2) * (PARTICLE_HEIGHT - 2)
@@ -482,7 +488,7 @@ void drawCloth()
 			glColor3f(4.5,4.5,4.5);
 		} else
 		{
-			glColor3f(4.0,1.5,1.5);
+			glColor3f(1.0,3.5,1.5);
 		}
 		//border color
 		if (y == 1 || (y+1)*PARTICLE_WIDTH >= ARRAY_SIZE || i == (y-1)*PARTICLE_WIDTH || i+1 == (y)*PARTICLE_WIDTH - 1)
