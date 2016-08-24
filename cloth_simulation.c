@@ -16,7 +16,7 @@
 #define BALL_POSITION_X 6
 #define BALL_POSITION_Y -2
 #define BALL_POSITION_Z 0
-#define BALL_RADIUS 4
+#define BALL_RADIUS 3
 #define TRUE 1
 #define FALSE 0
 
@@ -26,15 +26,10 @@
 
 #define CLOTH_WIDTH 25
 #define CLOTH_HEIGHT 20
-<<<<<<< HEAD
-#define PARTICLE_WIDTH 50 // must be >= 2 particles wide
-#define PARTICLE_HEIGHT 50 // must be >= 2 particles heigh
-#define MASS 1.0
-=======
-#define PARTICLE_WIDTH 20 // must be >= 2 particles wide
-#define PARTICLE_HEIGHT 20 // must be >= 2 particles heigh
-#define MASS 0.9
->>>>>>> develop
+
+#define PARTICLE_WIDTH 40 // must be >= 2 particles wide
+#define PARTICLE_HEIGHT 40 // must be >= 2 particles heigh
+#define MASS 1.5
 
 #define ARRAY_SIZE PARTICLE_WIDTH*PARTICLE_HEIGHT
 #define SPRING_COUNT 6 + 5*((PARTICLE_WIDTH - 2) + (PARTICLE_HEIGHT - 2)) + 4*(PARTICLE_WIDTH - 2) * (PARTICLE_HEIGHT - 2)
