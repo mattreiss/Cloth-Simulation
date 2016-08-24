@@ -16,7 +16,7 @@
 #define BALL_POSITION_X 6
 #define BALL_POSITION_Y -2
 #define BALL_POSITION_Z 0
-#define BALL_RADIUS 4
+#define BALL_RADIUS 3
 #define TRUE 1
 #define FALSE 0
 
